@@ -4,20 +4,42 @@
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
+
 namespace Ui {
-class MainWindow;
+class Calculator;
 }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
+enum MathOperator {
+    NONE = 0,
+    DIVIDE = 1,
+    MULTIPLY = 2,
+    ADD = 3,
+    SUBTRACT = 4,
+    MODULO = 5,
+    PERCENT = 6
+};
+
+class Calculator : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    Calculator(QWidget *parent = nullptr);
+    ~Calculator();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::Calculator *ui;
+    MathOperator mathOperator = NONE;
+
+private slots:
+    void NumPressed();
+    void MathButtonPressed();
+    void ChangeNumberSign();
+    void EqualsButtonPressed();
+    void AddMemoryPressed();
+    void GetMemoryPressed();
+    void SubtractMemoryPressed();
+    void Clear();
 };
 #endif // CALCULATOR_H
