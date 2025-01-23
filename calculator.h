@@ -40,6 +40,8 @@ private slots:
     void AddMemoryPressed();
     void GetMemoryPressed();
     void SubtractMemoryPressed();
-    void Clear();
+    void AllClear();
+    void Delete();
+    void DecimalPressed();
 };
 #endif // CALCULATOR_H

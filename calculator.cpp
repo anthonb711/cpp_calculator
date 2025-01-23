@@ -1,5 +1,7 @@
 #include "calculator.h"
 #include "ui_calculator.h"
+#include <cmath>
+
 
 double calcVal = 0.0;
 double memVal = 0.0;
@@ -34,14 +36,18 @@ Calculator::Calculator(QWidget *parent)
     connect(ui->Multiply,   SIGNAL(released()), this, SLOT(MathButtonPressed()));
     connect(ui->Add,        SIGNAL(released()), this, SLOT(MathButtonPressed()));
     connect(ui->Subtract,   SIGNAL(released()), this, SLOT(MathButtonPressed()));
+    connect(ui->Modulo,     SIGNAL(released()), this, SLOT(MathButtonPressed()));
+    connect(ui->Percent,    SIGNAL(released()), this, SLOT(MathButtonPressed()));
 
-    connect(ui->Equals,      SIGNAL(released()), this, SLOT(EqualsButtonPressed()));
+    connect(ui->Equals,     SIGNAL(released()), this, SLOT(EqualsButtonPressed()));
 
     connect(ui->SignChange, SIGNAL(released()), this, SLOT(ChangeNumberSign()));
     connect(ui->MemAdd,     SIGNAL(released()), this, SLOT(AddMemoryPressed()));
-    connect(ui->MemRecall,     SIGNAL(released()), this, SLOT(GetMemoryPressed()));
+    connect(ui->MemRecall,  SIGNAL(released()), this, SLOT(GetMemoryPressed()));
     connect(ui->MemSub,     SIGNAL(released()), this, SLOT(SubtractMemoryPressed()));
-    connect(ui->AllClear,      SIGNAL(released()), this, SLOT(Clear()));
+    connect(ui->AllClear,   SIGNAL(released()), this, SLOT(AllClear()));
+    connect(ui->Backspace,  SIGNAL(released()), this, SLOT(Delete()));
+    connect(ui->Decimal,    SIGNAL(released()), this, SLOT(DecimalPressed()));
 }
 
 
@@ -60,22 +66,24 @@ void Calculator::NumPressed(){
     QPushButton *button = (QPushButton *)sender();
     QString butVal = button->text();
     QString displayVal = ui->Display->text();
+    double dblDisplayVal = displayVal.toDouble();
 
-    if((displayVal.toDouble() == 0) || (displayVal.toDouble() == 0.0)){
+    if(displayVal != "0." && ((dblDisplayVal == 0) || (dblDisplayVal == 0.0))){
         ui->Display->setText(butVal);
+
     } else {
         QString newVal = displayVal + butVal;
         double dbNewVal = newVal.toDouble();
         ui->Display->setText(QString::number(dbNewVal, 'g', 16));
     }
-}
 
+}
 
 /************************************************************
  * * MATH BUTTON PRESSED:
  * Triggered on a math opertor button release event
  * Updates mathOperator with user selected operator
- * Clears the display
+ * Displays the operation selected
  ***********************************************************/
 void Calculator::MathButtonPressed(){
     mathOperator = NONE;
@@ -89,21 +97,27 @@ void Calculator::MathButtonPressed(){
     QString butVal = button->text();
 
     // Which math operator was pressed?
-    if(butVal == "/"){
+    if(butVal == "÷"){
         mathOperator = DIVIDE;
 
-    } else if(butVal == "*"){
+    } else if(butVal == "x"){
         mathOperator = MULTIPLY;
 
     } else if(QString::compare(butVal, "+", Qt::CaseInsensitive) == 0){ // Although it is unecessary I am leaving the QString::compare for an example.
         mathOperator = ADD;
 
-    } else{
+    } else if(butVal == "-"){
         mathOperator = SUBTRACT;
+
+    } else if (butVal == "mod"){
+        mathOperator = MODULO;
+
+    } else{
+        mathOperator = PERCENT;
     }
 
     //clear the display
-    ui->Display->setText("");
+    ui->Display->setText(butVal);
 }
 
 
@@ -130,6 +144,10 @@ void Calculator::EqualsButtonPressed() {
     double dblDisplayVal = displayVal.toDouble();
 
     switch(mathOperator) {
+    case 0:
+        solution = dblDisplayVal;
+        break;
+
     case 1:
         solution = (calcVal / dblDisplayVal);
         break;
@@ -141,6 +159,12 @@ void Calculator::EqualsButtonPressed() {
         break;
     case 4:
         solution = (calcVal - dblDisplayVal);
+        break;
+    case 5:
+        solution = std::fmod(calcVal, dblDisplayVal);
+        break;
+    case 6:
+        solution = (calcVal * (dblDisplayVal / 100));
         break;
     default:
         break;
@@ -194,6 +218,39 @@ void Calculator::SubtractMemoryPressed(){
  * Triggered on AC button released event
  *
  ***********************************************************/
-void Calculator::Clear(){
+void Calculator::AllClear(){
+    calcVal = 0;
     ui->Display->setText(" ");
 }
+
+/************************************************************
+ * * BACKSPACE BUTTON PRESSED:
+ * Triggered on Delete button released event
+ *
+ ***********************************************************/
+void Calculator::Delete(){
+
+    QString displayVal = ui->Display->text();
+
+    displayVal.remove(displayVal.length() - 1, 1);
+    ui->Display->setText(displayVal);
+
+}
+
+/************************************************************
+ * * DECIMAL BUTTON PRESSED
+ * Triggered on Decimal button released event
+ *
+ ***********************************************************/
+void Calculator::DecimalPressed(){
+
+    QString displayVal = ui->Display->text();
+    if(displayVal.toDouble() == 0 || displayVal.toDouble() == 0.0){
+        ui->Display->setText("0.");
+
+   }else{
+    ui->Display->setText(displayVal + ".");
+
+    }
+}
+
