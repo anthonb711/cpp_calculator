@@ -40,6 +40,7 @@ private slots:
     void AddMemoryPressed();
     void GetMemoryPressed();
     void SubtractMemoryPressed();
+    void ClearMemoryPressed();
     void AllClear();
     void Delete();
     void DecimalPressed();

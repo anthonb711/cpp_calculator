@@ -24,7 +24,7 @@ Calculator::Calculator(QWidget *parent)
     for(int i =0; i < 10; ++i){
         QString butName = "NumPushBut_" + QString::number(i);
 
-        // This is how you search for a specfic widgit - Call parent and then findChild cast to the Qt widget type param is search term
+        // Call parent and then findChild cast to the Qt widget type param is search term
         numButtons[i] = Calculator::findChild<QPushButton *>(butName);
 
         // This calls the SLOT function from .h and connects it to a SIGNAL event which in this case is the release of the button.
@@ -45,6 +45,7 @@ Calculator::Calculator(QWidget *parent)
     connect(ui->MemAdd,     SIGNAL(released()), this, SLOT(AddMemoryPressed()));
     connect(ui->MemRecall,  SIGNAL(released()), this, SLOT(GetMemoryPressed()));
     connect(ui->MemSub,     SIGNAL(released()), this, SLOT(SubtractMemoryPressed()));
+    connect(ui->MemClear,   SIGNAL(released()), this, SLOT(ClearMemoryPressed()));
     connect(ui->AllClear,   SIGNAL(released()), this, SLOT(AllClear()));
     connect(ui->Backspace,  SIGNAL(released()), this, SLOT(Delete()));
     connect(ui->Decimal,    SIGNAL(released()), this, SLOT(DecimalPressed()));
@@ -63,14 +64,20 @@ Calculator::~Calculator()
  * Triggered on a number button released event
  ***********************************************************/
 void Calculator::NumPressed(){
+
+    //get the value of the button that triggered the slot and convert it to a double
     QPushButton *button = (QPushButton *)sender();
     QString butVal = button->text();
     QString displayVal = ui->Display->text();
     double dblDisplayVal = displayVal.toDouble();
 
+
+    // Effectively clears the display if a math operation was dispalyed the displays the vaule of the number button pressed.
+    // Accounts for the string "0." not to be counted as the number 0 so the right and side of the decimal can be displayed with the "0." portion of the number.
     if(displayVal != "0." && ((dblDisplayVal == 0) || (dblDisplayVal == 0.0))){
         ui->Display->setText(butVal);
 
+    //else we add the new value of the new number pressed to the old number value displayed. Allow for numbers > 9 to be entered
     } else {
         QString newVal = displayVal + butVal;
         double dbNewVal = newVal.toDouble();
@@ -116,7 +123,7 @@ void Calculator::MathButtonPressed(){
         mathOperator = PERCENT;
     }
 
-    //clear the display
+    //display the math operator selected
     ui->Display->setText(butVal);
 }
 
@@ -129,6 +136,7 @@ void Calculator::MathButtonPressed(){
 void Calculator::ChangeNumberSign(){
     QString displayVal = ui->Display->text();
     double dblDisplayVal = displayVal.toDouble();
+
     ui->Display->setText(QString::number((dblDisplayVal * -1), 'g', 16));
 }
 
@@ -147,7 +155,6 @@ void Calculator::EqualsButtonPressed() {
     case 0:
         solution = dblDisplayVal;
         break;
-
     case 1:
         solution = (calcVal / dblDisplayVal);
         break;
@@ -177,15 +184,14 @@ void Calculator::EqualsButtonPressed() {
 /************************************************************
  * * ADD MEMORY BUTTON PRESSED:
  * Triggered on M+ button released event
- *
+ * Adds the number to the current value in memory
+ * Displays the solution
  ***********************************************************/
 void Calculator::AddMemoryPressed(){
-
     QString displayVal = ui->Display->text();
     calcVal = displayVal.toDouble();
+
     memVal = memVal + calcVal;
-
-
     ui->Display->setText(QString::number(memVal, 'g', 16));
 }
 
@@ -193,7 +199,7 @@ void Calculator::AddMemoryPressed(){
 /************************************************************
  * * GET MEMORY BUTTON PRESSED:
  * Triggered on M button released event
- *
+ * Retrieves the value in memory and displays it
  ***********************************************************/
 void Calculator::GetMemoryPressed(){
     ui->Display->setText(QString::number(memVal, 'g', 16));
@@ -203,7 +209,8 @@ void Calculator::GetMemoryPressed(){
 /************************************************************
  * * SUBTRACT MEMORY BUTTON PRESSED:
  * Triggered on M- button released event
- *
+ * Subracts the number from the current value in memory
+ * Displays the solution
  ***********************************************************/
 void Calculator::SubtractMemoryPressed(){
     QString displayVal = ui->Display->text();
@@ -212,11 +219,20 @@ void Calculator::SubtractMemoryPressed(){
     ui->Display->setText(QString::number(memVal, 'g', 16));
 }
 
+/************************************************************
+ * * MEMORY CLEAR BUTTON PRESSED:
+ * Triggered on MC button released event
+ * Clears the value stored in memory
+ ***********************************************************/
+void Calculator::ClearMemoryPressed(){
+    memVal = 0;
+    ui->Display->setText(" ");
+}
 
 /************************************************************
  * * CLEAR BUTTON PRESSED:
  * Triggered on AC button released event
- *
+ * Clears the current calculated value
  ***********************************************************/
 void Calculator::AllClear(){
     calcVal = 0;
@@ -226,7 +242,7 @@ void Calculator::AllClear(){
 /************************************************************
  * * BACKSPACE BUTTON PRESSED:
  * Triggered on Delete button released event
- *
+ * Removes the last character entered from the display
  ***********************************************************/
 void Calculator::Delete(){
 
@@ -240,17 +256,19 @@ void Calculator::Delete(){
 /************************************************************
  * * DECIMAL BUTTON PRESSED
  * Triggered on Decimal button released event
- *
+ * Sets up rules for the displayed value to be a decimal
  ***********************************************************/
 void Calculator::DecimalPressed(){
 
+    // If there is no current value in the display when the decimal button is pressed
+    // at a leading zero to the decimal before displaying.
     QString displayVal = ui->Display->text();
     if(displayVal.toDouble() == 0 || displayVal.toDouble() == 0.0){
         ui->Display->setText("0.");
 
-   }else{
-    ui->Display->setText(displayVal + ".");
-
-    }
+    // Else add the decimal to the left of the currently dispaly value.
+   } else {
+        ui->Display->setText(displayVal + ".");
+   }
 }
 
